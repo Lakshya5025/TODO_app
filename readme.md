@@ -166,7 +166,3 @@ JSON
  }  
  \]  
 }
-
-I've created this README file for your project. While I can't directly create a Canva design, this Markdown format is the standard for GitHub and is designed to be clear and easy to read. You can copy and paste this into a README.md file in your repository.
-
-If you'd like to use this information in a Canva design, you can take a screenshot of the formatted README on GitHub or use an online "Markdown to Image" converter to create a visual representation.
