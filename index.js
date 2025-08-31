@@ -21,7 +21,7 @@ async function signup(req, res) {
         res.status(201).json({
             message: "User added successfully"
         })
-    } catch (er) {
+    } catch (err) {
         res.json({
             message: err.message
         });
