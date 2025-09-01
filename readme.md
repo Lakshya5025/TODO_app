@@ -1,3 +1,5 @@
+Of course, here is a generated readme.md file for your Todo App.
+
 # **Todo App API**
 
 A simple and efficient Node.js application for managing your daily tasks. This backend service allows you to create an account, log in, and manage your to-do list with ease.
@@ -17,6 +19,8 @@ A simple and efficient Node.js application for managing your daily tasks. This b
 - **Mongoose:** An elegant MongoDB object modeling for Node.js.
 - **JSON Web Token (JWT):** A compact, URL-safe means of representing claims to be transferred between two parties.
 - **dotenv:** A zero-dependency module that loads environment variables from a .env file into process.env.
+- **bcrypt:** A library for hashing passwords.
+- **Zod:** A TypeScript-first schema declaration and validation library.
 
 ## **Getting Started**
 
