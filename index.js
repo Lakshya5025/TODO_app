@@ -1,10 +1,15 @@
 const express = require('express');
+const path = require('path');
 const { z } = require('zod');
 const bcrypt = require('bcrypt');
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { userModel, todoModel } = require('./db');
 const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public')));
+
 require('dotenv').config({ path: ".env" });
 mongoose.connect(process.env.MONGO_URL);
 app.use(express.json());
@@ -25,6 +30,8 @@ const signinSchema = z.object({
 async function signup(req, res) {
 
     const isValidate = signupSchema.safeParse(req.body);
+    // console.log(req);
+    // console.log(req.body);
     if (isValidate.success) {
         let { username, password, email } = req.body;
         email = email.toLowerCase();
@@ -32,16 +39,16 @@ async function signup(req, res) {
         const newUser = new userModel({ username, password, email });
         try {
             await newUser.save();
-            res.status(201).json({
+            res.status(201).render(__dirname + "/public/pages/signup.ejs", {
                 message: "User added successfully"
             })
         } catch (err) {
-            console.log(err.code)
+            // console.log(err.code)
             let msg = "server error! try again later"
             if (err.code == 11000) {
                 msg = "Email already present"
             }
-            res.status(409).json({
+            res.status(409).render(__dirname + "/public/pages/signup.ejs", {
                 message: msg
             });
         }
@@ -50,7 +57,7 @@ async function signup(req, res) {
         const errorMessages = isValidate.error.issues.map(issue => ({
             field: issue.path[0],
             message: issue.message,
-        })); res.status(400).json({
+        })); res.status(400).render(__dirname + "/public/pages/signup.ejs", {
             message: "Invalid input provide",
             error: errorMessages
         })
@@ -59,6 +66,7 @@ async function signup(req, res) {
 
 async function signin(req, res) {
     const isValidate = signinSchema.safeParse(req.body);
+    // console.log(req.body);
     if (isValidate.success) {
         let { username, password } = req.body;
         let data = await userModel.findOne({
@@ -71,11 +79,12 @@ async function signin(req, res) {
         }
         const correctPass = await bcrypt.compare(password, data.password);
         if (correctPass) {
+            console.log("logged in successfully");
             let token = jwt.sign({
                 userId: data._id
             }, process.env.JWT_SECRET)
             res.status(200).json({
-                message: token
+                token: token
             })
         }
         else {
@@ -84,20 +93,27 @@ async function signin(req, res) {
             })
         }
     } else {
-        res.status(400).json({
-            message: isValidate.error.issues[0].message
+        const errorMessages = isValidate.error.issues.map(issue => ({
+            field: issue.path[0],
+            message: issue.message,
+        })); res.status(400).json({
+            message: "Invalid input provide",
+            error: errorMessages
         })
     }
 }
 function auth(req, res, next) {
+    console.log("auth middle ware is running");
     const token = req.headers.token;
+    // console.log(token);
     try {
         let data = jwt.verify(token, process.env.JWT_SECRET);
-        req.body.userId = data.userId;
-        // console.log(data.userId);
+        req.userId = data.userId;
+        console.log("now  calling next function")
         next();
     }
     catch (err) {
+        console.log("Error block is running ")
         res.status(401).json({
             message: err.message
         })
@@ -135,9 +151,24 @@ async function gettodos(req, res) {
     }
 }
 
+app.get('/', (req, res) => {
+    res.render(__dirname + "/public/pages/signup.ejs");
+})
+app.get("/signin", (req, res) => {
+    res.render(__dirname + "/public/pages/signin.ejs");
+})
 app.post("/signup", signup);
 app.post("/signin", signin);
 app.post("/todo", auth, addtodo);
+app.get("/fake", (req, res) => {
+    console.log("in the fake function")
+    res.render(__dirname + "/public/pages/fake.ejs");
+})
+app.get("/todo", auth, (req, res) => {
+    console.log("in the todoRoute function")
+    res.sendFile(__dirname + "/public/pages/todo.ejs");
+})
+
 app.get("/todos", auth, gettodos);
 
 

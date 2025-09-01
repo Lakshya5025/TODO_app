@@ -1,0 +1,101 @@
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Form container styling */
+form {
+    background-color: #ffffff;
+    padding: 2rem 2.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+}
+
+/* Form title */
+h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #1c1e21;
+    font-size: 1.8rem;
+}
+
+/* Label styling */
+label {
+    margin-bottom: 0.5rem;
+    color: #606770;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Input field styling */
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #dddfe2;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+/* Focus state for input fields */
+input[type="text"]:focus,
+input[type="password"]:focus {
+    outline: none;
+    border-color: #1877f2;
+    /* A blue color similar to Facebook's theme */
+    box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+}
+
+/* Signup button styling */
+button {
+    background-color: #1877f2;
+    color: white;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    margin-top: 0.5rem;
+}
+
+/* Hover effect for the button */
+button:hover {
+    background-color: #166fe5;
+}
+
+.extra-links {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.extra-links a {
+    color: #1877f2;
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin: 0 0.5rem;
+    transition: text-decoration 0.2s;
+}
+
+.extra-links a:hover {
+    text-decoration: underline;
+}
+
+.extra-links .separator {
+    color: #ccc;
+}

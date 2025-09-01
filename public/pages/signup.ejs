@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../styles/sign.css">
+    <title>Signup Page</title>
+
+</head>
+
+<body>
+    <form action="/signup" method="POST">
+        <% if (typeof message !=='undefined' ) { %>
+            <% console.log("User data:", message); %>
+
+                <p class="success-message">
+                    <%= message %>
+                </p>
+                <% } %>
+                    <h2>Signup</h2>
+
+                    <label for="username">Enter your username</label>
+                    <input type="text" id="username" name="username" required>
+
+                    <label for="email">Enter your email</label>
+                    <input type="text" id="email" name="email" required>
+
+                    <label for="password">Enter your password</label>
+                    <input type="password" id="password" name="password" required>
+
+                    <button type="submit">Signup</button>
+                    <div class="extra-links">
+                        <a href="#">Forgot Password?</a>
+                        <span class="separator">|</span>
+                        <a href="/signin">Already have account?</a>
+                    </div>
+
+    </form>
+
+</body>
+
+</html>
