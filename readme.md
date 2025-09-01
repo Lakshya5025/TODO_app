@@ -1,3 +1,5 @@
+Of course, here is a generated readme.md file for your Todo App.
+
 # **Todo App API**
 
 A simple and efficient Node.js application for managing your daily tasks. This backend service allows you to create an account, log in, and manage your to-do list with ease.
