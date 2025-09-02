@@ -38,7 +38,7 @@
             try {
                 const response = await axios.post("/signin", { username, password });
                 localStorage.setItem('token', response.data.token);
-                window.location.href = "/fake";
+                window.location.href = "/todo";
             }
             catch (err) {
                 // console.log(err.response.data);

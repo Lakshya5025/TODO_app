@@ -6,11 +6,11 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { userModel, todoModel } = require('./db');
 const app = express();
+require('dotenv').config({ path: ".env" });
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
-require('dotenv').config({ path: ".env" });
 mongoose.connect(process.env.MONGO_URL);
 app.use(express.json());
 
@@ -108,7 +108,7 @@ function auth(req, res, next) {
     // console.log(token);
     try {
         let data = jwt.verify(token, process.env.JWT_SECRET);
-        req.userId = data.userId;
+        req.body.userId = data.userId;
         console.log("now  calling next function")
         next();
     }
@@ -161,6 +161,8 @@ app.post("/signup", signup);
 app.post("/signin", signin);
 app.post("/todo", auth, addtodo);
 app.get("/fake", (req, res) => {
+    console.log(req.headers.token);
+    req.body.userId = req.header.token;
     console.log("in the fake function")
     res.render(__dirname + "/public/pages/fake.ejs");
 })
