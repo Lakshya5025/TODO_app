@@ -4,11 +4,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Todo App</title>
+    <link rel="stylesheet" href="../styles/todo.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
-    this is todo
+    <div class="container">
+        <h1>My To-Do List</h1>
+        <form id="todo-form">
+            <input type="text" id="task-input" name="task" placeholder="What do you need to do?" required>
+            <button type="submit">Add Task</button>
+        </form>
+        <p id="message"></p>
+        <ul id="todo-list">
+            <!-- Todo items will be inserted here -->
+        </ul>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("token");
+        const todoList = document.getElementById("todo-list");
+        const todoForm = document.getElementById("todo-form");
+        const taskInput = document.getElementById("task-input");
+        const messageP = document.getElementById("message");
+
+        // Function to fetch and display todos
+        async function fetchTodos() {
+            if (!token) {
+                window.location.href = "/signin";
+                return;
+            }
+
+            try {
+                const response = await axios.get("/todos", {
+                    headers: { token }
+                });
+
+                const todos = response.data.message;
+                todoList.innerHTML = "";
+
+                if (todos.length === 0) {
+                    todoList.innerHTML = "<li>You have no tasks yet!</li>";
+                } else {
+                    todos.forEach(todo => {
+                        const listItem = document.createElement("li");
+                        listItem.classList.toggle('completed', todo.isDone);
+
+                        const taskSpan = document.createElement("span");
+                        taskSpan.textContent = todo.task;
+
+                        const buttonGroup = document.createElement("div");
+                        buttonGroup.classList.add("button-group");
+
+                        const completeButton = document.createElement("button");
+                        completeButton.textContent = todo.isDone ? "Undo" : "Complete";
+                        completeButton.dataset.id = todo._id;
+                        completeButton.classList.add('complete-btn');
+
+                        const deleteButton = document.createElement("button");
+                        deleteButton.textContent = "Delete";
+                        deleteButton.dataset.id = todo._id;
+                        deleteButton.classList.add('delete-btn');
+
+                        buttonGroup.appendChild(completeButton);
+                        buttonGroup.appendChild(deleteButton);
+
+                        listItem.appendChild(taskSpan);
+                        listItem.appendChild(buttonGroup);
+                        todoList.appendChild(listItem);
+                    });
+                }
+            } catch (err) {
+                console.error("Error fetching todos:", err);
+                if (err.response && err.response.status === 401) {
+                    localStorage.removeItem("token");
+                    window.location.href = "/signin";
+                } else {
+                    messageP.textContent = "Could not fetch your tasks. Please try again later.";
+                }
+            }
+        }
+
+        // Function to handle adding a new todo
+        async function addTodoHandler(e) {
+            e.preventDefault();
+            const task = taskInput.value.trim();
+            if (!task) {
+                messageP.textContent = "Task cannot be empty.";
+                return;
+            }
+
+            try {
+                await axios.post("/todo", { task }, {
+                    headers: { token }
+                });
+                taskInput.value = "";
+                messageP.textContent = "";
+                fetchTodos();
+            } catch (err) {
+                console.error("Error adding todo:", err);
+                if (err.response && err.response.status === 401) {
+                    localStorage.removeItem("token");
+                    window.location.href = "/signin";
+                } else {
+                    messageP.textContent = "Failed to add task. Please try again.";
+                }
+            }
+        }
+
+        // Function to handle clicks on the todo list (complete or delete)
+        async function handleListClick(e) {
+            const target = e.target;
+            const todoId = target.dataset.id;
+
+            if (!todoId) return; // Exit if the click was not on a button with a data-id
+
+            // Handle complete/undo click
+            if (target.classList.contains('complete-btn')) {
+                try {
+                    await axios.put(`/todo/${todoId}`, {}, {
+                        headers: { token }
+                    });
+                    fetchTodos(); // Refresh list
+                } catch (err) {
+                    console.error("Error updating todo:", err);
+                    messageP.textContent = "Failed to update task status.";
+                }
+            }
+
+            // Handle delete click
+            if (target.classList.contains('delete-btn')) {
+                try {
+                    await axios.delete(`/todo/${todoId}`, {
+                        headers: { token }
+                    });
+                    fetchTodos(); // Refresh list
+                } catch (err) {
+                    console.error("Error deleting todo:", err);
+                    messageP.textContent = "Failed to delete task.";
+                }
+            }
+        }
+
+        // Initial fetch of todos when the page loads
+        fetchTodos();
+
+        // Add event listeners
+        todoForm.addEventListener("submit", addTodoHandler);
+        todoList.addEventListener('click', handleListClick);
+
+    </script>
 </body>
 
 </html>

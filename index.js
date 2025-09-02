@@ -6,11 +6,11 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { userModel, todoModel } = require('./db');
 const app = express();
-require('dotenv').config({ path: ".env" });
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
+require('dotenv').config({ path: ".env" });
 mongoose.connect(process.env.MONGO_URL);
 app.use(express.json());
 
@@ -108,7 +108,7 @@ function auth(req, res, next) {
     // console.log(token);
     try {
         let data = jwt.verify(token, process.env.JWT_SECRET);
-        req.body.userId = data.userId;
+        req.userId = data.userId;
         console.log("now  calling next function")
         next();
     }
@@ -120,7 +120,9 @@ function auth(req, res, next) {
     }
 }
 async function addtodo(req, res) {
-    let { task, userId } = req.body;
+    const { task } = req.body;
+    const userId = req.userId;
+
     if (!task) {
         return res.status(400).json({
             message: "task name is required"
@@ -140,17 +142,50 @@ async function addtodo(req, res) {
     }
 }
 async function gettodos(req, res) {
-    const { userId } = req.body;
+    const userId = req.userId; // Use userId from auth middleware
     try {
         const todos = await todoModel.find({ userId });
         // console.log(todos);
-        if (todos.length == 0) return res.status(404).json({ message: "No todo tasks" });
+        if (todos.length == 0) return res.status(200).json({ message: [] }); // Return empty array if no todos
         else res.status(200).json({ message: todos })
     } catch (err) {
         res.status(500).json({ message: err.message })
     }
 }
+async function updateTodoStatus(req, res) {
+    const { id } = req.params;
+    const userId = req.userId;
 
+    try {
+        const todo = await todoModel.findOne({ _id: id, userId: userId });
+
+        if (!todo) {
+            return res.status(404).json({ message: "Todo not found or you don't have permission to edit it." });
+        }
+
+        todo.isDone = !todo.isDone; // Toggle the status
+        await todo.save();
+
+        res.status(200).json({ message: "Todo updated successfully", todo });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error while updating todo." });
+    }
+}
+async function deleteTodo(req, res) {
+    const { id } = req.params;
+    const userId = req.userId;
+    try {
+        const result = await todoModel.findOneAndDelete({ _id: id, userId });
+        if (!result) {
+            return res.status(404).json({ message: "Todo not found or you don't have permission to delete it." });
+        }
+        res.status(200).json({ message: "Todo deleted successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error while deleting todo." });
+    }
+}
 app.get('/', (req, res) => {
     res.render(__dirname + "/public/pages/signup.ejs");
 })
@@ -160,15 +195,11 @@ app.get("/signin", (req, res) => {
 app.post("/signup", signup);
 app.post("/signin", signin);
 app.post("/todo", auth, addtodo);
-app.get("/fake", (req, res) => {
-    console.log(req.headers.token);
-    req.body.userId = req.header.token;
-    console.log("in the fake function")
-    res.render(__dirname + "/public/pages/fake.ejs");
-})
-app.get("/todo", auth, (req, res) => {
+app.put("/todo/:id", auth, updateTodoStatus);
+app.delete("/todo/:id", auth, deleteTodo);
+app.get("/todo", (req, res) => {
     console.log("in the todoRoute function")
-    res.sendFile(__dirname + "/public/pages/todo.ejs");
+    res.render(__dirname + "/public/pages/todo.ejs");
 })
 
 app.get("/todos", auth, gettodos);
